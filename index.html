@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Permutas - Bombeiros PB | Protótipo</title>
+  <style>
+    :root {
+      --primary: #d32f2f;
+      --primary-dark: #b71c1c;
+      --primary-light: #ffebee;
+      --amber: #f59e0b;
+      --amber-light: #fef3c7;
+      --bg: #f4f7f6;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --green: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Cabeçalho */
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 10px rgba(211, 47, 47, 0.25);
+    }
+
+    .header h1 {
+      font-size: 1.4rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .header p {
+      font-size: 0.88rem;
+      opacity: 0.9;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .stat-pill {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .stat-pill.match-highlight {
+      background: var(--amber);
+      color: #78350f;
+    }
+
+    /* Controles e Filtros */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15);
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .filter-chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .chip.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .chip.match-chip.active {
+      background: var(--amber);
+      color: #78350f;
+      border-color: var(--amber);
+    }
+
+    /* Ação de Adicionar */
+    .btn-add {
+      background: var(--primary);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-add:active {
+      background: var(--primary-dark);
+    }
+
+    /* Lista de Cards */
+    .card {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      border-left: 5px solid var(--primary);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+      position: relative;
+    }
+
+    .card.direct-match {
+      border-left-color: var(--amber);
+      background: #fffdfa;
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      background: #eee;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .tag.match-tag {
+      background: var(--amber-light);
+      color: #b45309;
+    }
+
+    .card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .info-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 0;
+      font-size: 0.92rem;
+    }
+
+    .info-line strong {
+      color: #334155;
+    }
+
+    .info-line.destination {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .obs-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .interested-count {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #0284c7;
+      font-weight: 600;
+    }
+
+    /* Botão Principal */
+    .btn {
+      background: var(--primary);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      margin-top: 12px;
+      font-size: 0.95em;
+      transition: background 0.2s;
+    }
+
+    .btn:active {
+      background: var(--primary-dark);
+    }
+
+    .btn.btn-interested {
+      background: var(--green);
+    }
+
+    /* Modal / Diálogo */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background: var(--primary);
+      color: white;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 1.1rem;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cabeçalho -->
+  <div class="header">
+    <h1>🚒 Permutas PB</h1>
+    <p>Sistema de Interesse Mútuo • CBMPB</p>
+    <p style="margin-top:8px;font-weight:700;color:#fff3cd;">PROTÓTIPO DE DEMONSTRAÇÃO — dados fictícios e salvos somente neste navegador</p>
+    <div class="stats-bar">
+      <div class="stat-pill" id="stat-total">0 Permutas</div>
+      <div class="stat-pill match-highlight" id="stat-matches">0 Matches Diretos</div>
+    </div>
+  </div>
+
+  <!-- Controles e Filtros -->
+  <div class="controls">
+    <button class="btn-add" onclick="openNewModal()">+ Publicar Nova Permuta</button>
+    <input type="text" id="search-box" class="search-input" placeholder="Buscar militar, posto, cidade ou batalhão..." oninput="renderCards()" />
+
+    <div class="filter-chips">
+      <button class="chip active" onclick="setFilter('ALL', this)">Todas</button>
+      <button class="chip match-chip" onclick="setFilter('MATCH', this)">🔥 Matches</button>
+      <button class="chip" onclick="setFilter('1º BBM', this)">1º BBM (JP)</button>
+      <button class="chip" onclick="setFilter('2º BBM', this)">2º BBM (CG)</button>
+      <button class="chip" onclick="setFilter('3º BBM', this)">3º BBM (Guarabira)</button>
+      <button class="chip" onclick="setFilter('4º BBM', this)">4º BBM (Patos)</button>
+      <button class="chip" onclick="setFilter('5º BBM', this)">5º BBM (Cajazeiras)</button>
+      <button class="chip" onclick="setFilter('6º BBM', this)">6º BBM (Sousa)</button>
+      <button class="chip" onclick="setFilter('7º BBM', this)">7º BBM (Cabedelo)</button>
+    </div>
+  </div>
+
+  <!-- Lista de Permutas -->
+  <div id="cards-container"></div>
+
+  <!-- Modal: Manifestar Interesse (Pede a Matrícula e Dados) -->
+  <div class="modal-overlay" id="interest-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-target-title">Manifestar Interesse</h2>
+        <button class="modal-close" onclick="closeInterestModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-target-info" style="font-size: 0.88rem; background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 3px solid var(--primary);"></div>
+        
+        <form id="interest-form" onsubmit="handleInterestSubmit(event)">
+          <div class="form-group">
+            <label for="int-matricula">Matrícula Funcional do CBMPB *</label>
+            <input type="text" id="int-matricula" placeholder="Ex: 000.000-0" required />
+          </div>
+
+          <div class="form-group">
+            <label for="int-nome">Nome de Guerra *</label>
+            <input type="text" id="int-nome" placeholder="Ex: SD Barbosa" required />
+          </div>
+
+          <div class="form-group">
+            <label for="int-posto">Posto / Graduação</label>
+            <select id="int-posto">
+              <option value="Soldado">Soldado</option>
+              <option value="Cabo">Cabo</option>
+              <option value="3º Sargento">3º Sargento</option>
+              <option value="2º Sargento">2º Sargento</option>
+              <option value="1º Sargento">1º Sargento</option>
+              <option value="Subtenente">Subtenente</option>
+              <option value="Oficial">Oficial</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="int-bbm-atual">Sua Lotação Atual (Onde serve hoje)</label>
+            <select id="int-bbm-atual">
+              <option value="1º BBM (João Pessoa)">1º BBM (João Pessoa)</option>
+              <option value="2º BBM (Campina Grande)" selected>2º BBM (Campina Grande)</option>
+              <option value="3º BBM (Guarabira)">3º BBM (Guarabira)</option>
+              <option value="4º BBM (Patos)">4º BBM (Patos)</option>
+              <option value="5º BBM (Cajazeiras)">5º BBM (Cajazeiras)</option>
+              <option value="6º BBM (Sousa)">6º BBM (Sousa)</option>
+              <option value="7º BBM (Cabedelo)">7º BBM (Cabedelo)</option>
+              <option value="8º BBM (Catolé do Rocha)">8º BBM (Catolé do Rocha)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="int-whatsapp">WhatsApp para Contato</label>
+            <input type="tel" id="int-whatsapp" placeholder="(83) 90000-0000" />
+          </div>
+
+          <div class="form-group">
+            <label for="int-obs">Mensagem / Proposta de Escala</label>
+            <textarea id="int-obs" rows="2" placeholder="Ex: Disponibilidade para assumir a escala imediatamente..."></textarea>
+          </div>
+
+          <button type="submit" class="btn" style="margin-top: 10px;">Confirmar Interesse</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Nova Publicação de Permuta -->
+  <div class="modal-overlay" id="new-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Cadastrar Nova Permuta</h2>
+        <button class="modal-close" onclick="closeNewModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="new-form" onsubmit="handleNewSubmit(event)">
+          <div class="form-group">
+            <label for="new-nome">Nome de Guerra e Posto *</label>
+            <input type="text" id="new-nome" placeholder="Ex: SGT Lima" required />
+          </div>
+
+          <div class="form-group">
+            <label for="new-matricula">Matrícula Funcional *</label>
+            <input type="text" id="new-matricula" placeholder="Ex: 000.000-0" required />
+          </div>
+
+          <div class="form-group">
+            <label for="new-sai-de">Sai de: (Lotação Atual) *</label>
+            <select id="new-sai-de" required>
+              <option value="1º BBM (João Pessoa)">1º BBM (João Pessoa)</option>
+              <option value="2º BBM (Campina Grande)">2º BBM (Campina Grande)</option>
+              <option value="3º BBM (Guarabira)">3º BBM (Guarabira)</option>
+              <option value="4º BBM (Patos)">4º BBM (Patos)</option>
+              <option value="5º BBM (Cajazeiras)">5º BBM (Cajazeiras)</option>
+              <option value="6º BBM (Sousa)">6º BBM (Sousa)</option>
+              <option value="7º BBM (Cabedelo)">7º BBM (Cabedelo)</option>
+              <option value="8º BBM (Catolé do Rocha)">8º BBM (Catolé do Rocha)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="new-quer-ir">Quer ir para: (Destino Pretendido) *</label>
+            <select id="new-quer-ir" required>
+              <option value="2º BBM (Campina Grande)">2º BBM (Campina Grande)</option>
+              <option value="1º BBM (João Pessoa)">1º BBM (João Pessoa)</option>
+              <option value="3º BBM (Guarabira)">3º BBM (Guarabira)</option>
+              <option value="4º BBM (Patos)">4º BBM (Patos)</option>
+              <option value="5º BBM (Cajazeiras)">5º BBM (Cajazeiras)</option>
+              <option value="6º BBM (Sousa)">6º BBM (Sousa)</option>
+              <option value="7º BBM (Cabedelo)">7º BBM (Cabedelo)</option>
+              <option value="8º BBM (Catolé do Rocha)">8º BBM (Catolé do Rocha)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="new-modalidade">Modalidade / Escala</label>
+            <input type="text" id="new-modalidade" placeholder="Ex: Escala 24x72h - Combate" />
+          </div>
+
+          <div class="form-group">
+            <label for="new-whatsapp">WhatsApp para Contato</label>
+            <input type="tel" id="new-whatsapp" placeholder="(83) 90000-0000" />
+          </div>
+
+          <div class="form-group">
+            <label for="new-obs">Motivo / Observações</label>
+            <textarea id="new-obs" rows="2" placeholder="Ex: Aproximação de domicílio..."></textarea>
+          </div>
+
+          <button type="submit" class="btn" style="margin-top: 10px;">Publicar Permuta</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Base de dados inicial
+    const INITIAL_DATA = [
+      {
+        id: 1,
+        nome: "Militar Exemplo A",
+        matricula: "000.001-0",
+        saiDe: "1º BBM (João Pessoa)",
+        querIr: "2º BBM (Campina Grande)",
+        modalidade: "Escala 24x72h - Combate",
+        obs: "Resido em Campina Grande com a família. Desejo permuta imediata.",
+        tag: "Postado hoje",
+        whatsapp: "83000000001",
+        interessados: 1,
+        userInteressado: false
+      },
+      {
+        id: 2,
+        nome: "Militar Exemplo B",
+        matricula: "000.002-0",
+        saiDe: "4º BBM (Patos)",
+        querIr: "3º BBM (Guarabira)",
+        modalidade: "Escala 24x72h - Resgate / APH",
+        obs: "Transferência para a região do Brejo Paraibano. Possuo CNH de emergência.",
+        tag: "Postado ontem",
+        whatsapp: "83000000002",
+        interessados: 0,
+        userInteressado: false
+      },
+      {
+        id: 3,
+        nome: "Militar Exemplo C",
+        matricula: "000.003-0",
+        saiDe: "2º BBM (Campina Grande)",
+        querIr: "1º BBM (João Pessoa)",
+        modalidade: "Escala 24x72h - Salvamento",
+        obs: "Aprovado em curso na UFPB na capital.",
+        tag: "Postado hoje",
+        whatsapp: "83000000003",
+        interessados: 2,
+        userInteressado: false
+      }
+    ];
+
+    // Carrega do LocalStorage ou usa o inicial
+    let permutas = JSON.parse(localStorage.getItem("permutas_pb")) || INITIAL_DATA;
+    let currentFilter = "ALL";
+    let activePermutaId = null;
+
+    // Perfil do Militar logado (padrão 2º BBM para teste de match)
+    let userProfile = JSON.parse(localStorage.getItem("user_profile_pb")) || {
+      bbmAtual: "2º BBM (Campina Grande)",
+      bbmPretendido: "1º BBM (João Pessoa)"
+    };
+
+    function saveState() {
+      localStorage.setItem("permutas_pb", JSON.stringify(permutas));
+    }
+
+    function checkIsDirectMatch(item) {
+      return item.saiDe.includes(userProfile.bbmPretendido.split(" ")[0]) &&
+             item.querIr.includes(userProfile.bbmAtual.split(" ")[0]);
+    }
+
+    function renderCards() {
+      const container = document.getElementById("cards-container");
+      const searchQuery = document.getElementById("search-box").value.toLowerCase();
+      container.innerHTML = "";
+
+      let matchCount = 0;
+
+      const filtered = permutas.filter(item => {
+        const isMatch = checkIsDirectMatch(item);
+        if (isMatch) matchCount++;
+
+        // Filtro de Chips
+        if (currentFilter === "MATCH" && !isMatch) return false;
+        if (currentFilter !== "ALL" && currentFilter !== "MATCH") {
+          if (!item.saiDe.includes(currentFilter) && !item.querIr.includes(currentFilter)) return false;
+        }
+
+        // Filtro de Busca
+        if (searchQuery) {
+          const content = `${item.nome} ${item.matricula} ${item.saiDe} ${item.querIr} ${item.modalidade || ""} ${item.obs || ""}`.toLowerCase();
+          if (!content.includes(searchQuery)) return false;
+        }
+
+        return true;
+      });
+
+      // Atualiza Estatísticas
+      document.getElementById("stat-total").innerText = `${permutas.length} Permutas`;
+      document.getElementById("stat-matches").innerText = `${matchCount} Matches Diretos`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>Nenhuma permuta encontrada</h3>
+            <p style="font-size: 0.85rem; margin-top: 4px;">Tente ajustar os termos de busca ou filtros.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isMatch = checkIsDirectMatch(item);
+        const card = document.createElement("div");
+        card.className = `card ${isMatch ? "direct-match" : ""}`;
+
+        card.innerHTML = `
+          <div class="card-tags">
+            <span class="tag">${item.tag || "Ativo"}</span>
+            ${isMatch ? '<span class="tag match-tag">🔥 MATCH DIRETO!</span>' : ''}
+            ${item.interessados > 0 ? `<span class="tag">${item.interessados} interessado(s)</span>` : ''}
+          </div>
+          <h3>${item.nome} <span style="font-size:0.75em; color:var(--text-muted); font-weight:normal;">(Mat: ${item.matricula})</span></h3>
+          <div class="info-line">
+            <strong>Sai de:</strong> <span>${item.saiDe}</span>
+          </div>
+          <div class="info-line destination">
+            <strong>Quer ir para:</strong> <span>${item.querIr}</span>
+          </div>
+          ${item.modalidade ? `<div class="info-line" style="font-size:0.85em; color:#64748b;">• ${item.modalidade}</div>` : ''}
+          ${item.obs ? `<div class="obs-box">"${item.obs}"</div>` : ''}
+          
+          <button class="btn ${item.userInteressado ? 'btn-interested' : ''}" onclick="openInterestModal(${item.id})">
+            ${item.userInteressado ? '✓ Interesse Registrado' : (isMatch ? '🔥 Tenho Interesse (Match Disponível!)' : 'Tenho Interesse')}
+          </button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      renderCards();
+    }
+
+    /* Modal de Interesse */
+    function openInterestModal(id) {
+      activePermutaId = id;
+      const permuta = permutas.find(p => p.id === id);
+      if (!permuta) return;
+
+      document.getElementById("modal-target-title").innerText = `Interesse com ${permuta.nome}`;
+      document.getElementById("modal-target-info").innerHTML = `
+        <strong>Proposta:</strong> Sai de <em>${permuta.saiDe}</em> para <em>${permuta.querIr}</em>.
+      `;
+      document.getElementById("interest-modal").classList.add("active");
+    }
+
+    function closeInterestModal() {
+      document.getElementById("interest-modal").classList.remove("active");
+      document.getElementById("interest-form").reset();
+    }
+
+    function handleInterestSubmit(e) {
+      e.preventDefault();
+      const matricula = document.getElementById("int-matricula").value;
+      const nome = document.getElementById("int-nome").value;
+      const bbmAtual = document.getElementById("int-bbm-atual").value;
+
+      const permuta = permutas.find(p => p.id === activePermutaId);
+      if (permuta) {
+        if (!permuta.userInteressado) {
+          permuta.interessados = (permuta.interessados || 0) + 1;
+          permuta.userInteressado = true;
+        }
+        saveState();
+        closeInterestModal();
+        renderCards();
+
+        alert(`✅ Sucesso!\nSeu interesse foi registrado com a Matrícula: ${matricula} (${nome}).\nLotação informada: ${bbmAtual}`);
+      }
+    }
+
+    /* Modal de Nova Permuta */
+    function openNewModal() {
+      document.getElementById("new-modal").classList.add("active");
+    }
+
+    function closeNewModal() {
+      document.getElementById("new-modal").classList.remove("active");
+      document.getElementById("new-form").reset();
+    }
+
+    function handleNewSubmit(e) {
+      e.preventDefault();
+      const nome = document.getElementById("new-nome").value;
+      const matricula = document.getElementById("new-matricula").value;
+      const saiDe = document.getElementById("new-sai-de").value;
+      const querIr = document.getElementById("new-quer-ir").value;
+      const modalidade = document.getElementById("new-modalidade").value;
+      const whatsapp = document.getElementById("new-whatsapp").value;
+      const obs = document.getElementById("new-obs").value;
+
+      if (saiDe === querIr) {
+        alert("A unidade de origem e destino não podem ser as mesmas!");
+        return;
+      }
+
+      const novaPermuta = {
+        id: Date.now(),
+        nome,
+        matricula,
+        saiDe,
+        querIr,
+        modalidade: modalidade || "Escala 24x72h - Geral",
+        obs,
+        whatsapp,
+        tag: "Postado agora",
+        interessados: 0,
+        userInteressado: false
+      };
+
+      permutas.unshift(novaPermuta);
+      saveState();
+      closeNewModal();
+      renderCards();
+    }
+
+    // Inicialização
+    renderCards();
+  </script>
+</body>
+</html>
